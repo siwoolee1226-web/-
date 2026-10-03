@@ -107,7 +107,7 @@ export function FilterPanel({ filters, onChange, onReset, activeCount }: FilterP
 
       {/* 수위 (single) */}
       <div>
-        <SectionTitle>수위</SectionTitle>
+        <SectionTitle>수위 / 연령</SectionTitle>
         <div className="flex gap-2">
           {(["성인", "전연령"] as const).map((option) => (
             <Toggle
@@ -153,28 +153,14 @@ export function FilterPanel({ filters, onChange, onReset, activeCount }: FilterP
         </div>
       </div>
 
-      {/* 제외 키워드 */}
-      <div>
-        <SectionTitle>제외 키워드</SectionTitle>
-        <input
-          type="text"
-          value={filters.excludeKeywords}
-          onChange={(event) => onChange({ ...filters, excludeKeywords: event.target.value })}
-          placeholder="쉼표로 구분해 입력"
-          aria-label="제외 키워드"
-          className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30"
-        />
-      </div>
-
       {/* 정렬 */}
       <div>
         <SectionTitle>정렬</SectionTitle>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-2">
           {(
             [
               { value: "popular", label: "등록순" },
               { value: "latest", label: "최신순" },
-              { value: "hit", label: "HIT" },
             ] as { value: SortOption; label: string }[]
           ).map((sort) => (
             <Toggle

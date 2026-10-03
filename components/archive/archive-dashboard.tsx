@@ -15,9 +15,8 @@ interface ArchiveDashboardProps {
 }
 
 export function ArchiveDashboard({ initialPosts, initialUsedMock }: ArchiveDashboardProps) {
-  const [posts, setPosts] = useState<ArchivePost[]>(initialPosts)
+  const [posts] = useState<ArchivePost[]>(initialPosts)
   const usedMock = initialUsedMock
-  const [findRequests, setFindRequests] = useState<import("@/lib/archive-types").FindRequest[]>([])
 
   const [query, setQuery] = useState("")
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
@@ -40,34 +39,6 @@ useEffect(() => {
   if (!bookmarksLoaded) return
   localStorage.setItem("hq-archive-bookmarks", JSON.stringify([...bookmarks]))
 }, [bookmarks, bookmarksLoaded])
-
-const [readPosts, setReadPosts] = useState<Set<string>>(new Set())
-const [readLoaded, setReadLoaded] = useState(false)
-
-useEffect(() => {
-  try {
-    const raw = localStorage.getItem("hq-archive-read")
-    if (raw) setReadPosts(new Set(JSON.parse(raw)))
-  } catch {
-  } finally {
-    setReadLoaded(true)
-  }
-}, [])
-
-useEffect(() => {
-  if (!readLoaded) return
-  localStorage.setItem("hq-archive-read", JSON.stringify([...readPosts]))
-}, [readPosts, readLoaded])
-
-const toggleRead = (id: string) => {
-  setReadPosts((prev) => {
-    const next = new Set(prev)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
-    return next
-  })
-}
-
  const [showOnlyBookmarks, setShowOnlyBookmarks] = useState(false)
   const [showFilters, setShowFilters] = useState(true)
   const [memos, setMemos] = useState<Record<string, string>>({})
@@ -103,17 +74,14 @@ const toggleRead = (id: string) => {
   const [randomPick, setRandomPick] = useState<ArchivePost | null>(null)
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase().replace(/\s+/g, "").replace(/\s+/g, "")
+    const q = query.trim().toLowerCase()
     const result = posts.filter((post) => {
       if (showOnlyBookmarks && !bookmarks.has(post.id)) return false
       if (showOnlyMemos && !memos[post.id]) return false
-      const haystack = [post.title, post.description ?? "", post.author, ...post.genres, ...post.tags].join(" ").toLowerCase().replace(/\s+/g, "")
-      if (q && !haystack.includes(q)) return false
-      const excludeKeywords = filters.excludeKeywords
-        .split(",")
-        .map((keyword) => keyword.trim().toLowerCase().replace(/\s+/g, ""))
-        .filter(Boolean)
-      if (excludeKeywords.some((keyword) => haystack.includes(keyword))) return false
+      if (q) {
+        const haystack = [post.title, post.author, ...post.tags].join(" ").toLowerCase()
+        if (!haystack.includes(q)) return false
+      }
       if (filters.onlyJemJen !== null && post.onlyJemJen !== filters.onlyJemJen) return false
       if (filters.ageRelations.length > 0 && (!post.ageRelation || !filters.ageRelations.includes(post.ageRelation)))
         return false
@@ -125,14 +93,7 @@ const toggleRead = (id: string) => {
       return true
     })
 
-    if (filters.sort === "hit") {
-      result.sort((a, b) => {
-        const hitA = a.isHit ? 1 : 0
-        const hitB = b.isHit ? 1 : 0
-        if (hitA !== hitB) return hitB - hitA
-        return Number(b.id) - Number(a.id)
-      })
-    } else if (filters.sort === "latest") {
+    if (filters.sort === "latest") {
       result.sort((a, b) => Number(b.id) - Number(a.id))
     } else {
       // "등록순" — bookmarked first, then by id as a stable proxy
@@ -174,8 +135,6 @@ const toggleRead = (id: string) => {
   }
   const activeChips = useMemo(() => {
     const chips: { label: string; clear: () => void }[] = []
-    if (filters.sort === "hit")
-      chips.push({ label: "HIT 정렬", clear: () => setFilters((f) => ({ ...f, sort: "latest" })) })
     if (filters.onlyJemJen !== null)
       chips.push({
         label: `잼젠 ${filters.onlyJemJen ? "O" : "X"}`,
@@ -195,24 +154,6 @@ const toggleRead = (id: string) => {
         clear: () => setFilters((f) => ({ ...f, formats: f.formats.filter((v) => v !== format) })),
       }),
     )
-    filters.excludeKeywords
-      .split(",")
-      .map((keyword) => keyword.trim())
-      .filter(Boolean)
-      .forEach((keyword) =>
-        chips.push({
-          label: `제외: ${keyword}`,
-          clear: () =>
-            setFilters((f) => ({
-              ...f,
-              excludeKeywords: f.excludeKeywords
-                .split(",")
-                .map((value) => value.trim())
-                .filter((value) => value && value !== keyword)
-                .join(", "),
-            })),
-        }),
-      )
     filters.genres.forEach((genre) =>
       chips.push({
         label: genre,
@@ -233,8 +174,6 @@ const toggleRead = (id: string) => {
         onRandom={handleRandom}
         showOnlyBookmarks={showOnlyBookmarks}
         onToggleShowBookmarks={() => setShowOnlyBookmarks((prev) => !prev)}
-        findRequests={findRequests}
-        onFindRequestsChange={setFindRequests}
       />
 
       <main className="mx-auto max-w-7xl px-4 py-6">
@@ -363,8 +302,6 @@ const toggleRead = (id: string) => {
                       onTagClick={handleTagClick}
                       memo={memos[post.id] || ""}
                       onMemoChange={updateMemo}
-                      isRead={readPosts.has(post.id)}
-                      onToggleRead={toggleRead}
                     />
                   ))}
                 </div>
