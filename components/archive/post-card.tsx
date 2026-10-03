@@ -1,6 +1,6 @@
 "use client"
 
-import { ExternalLink, Heart, Star, X } from "lucide-react"
+import { ExternalLink, Heart } from "lucide-react"
 import type { ArchivePost } from "@/lib/archive-types"
 import { cn } from "@/lib/utils"
 import { Badge } from "./badge"
@@ -12,27 +12,13 @@ interface PostCardProps {
   onTagClick: (tag: string) => void
   memo: string
   onMemoChange: (id: string, value: string) => void
-  isRead: boolean
-  onToggleRead: (id: string) => void
 }
-export function PostCard({
-  post,
-  bookmarked,
-  onToggleBookmark,
-  onTagClick,
-  memo,
-  onMemoChange,
-  isRead,
-  onToggleRead,
-}: PostCardProps) {
+
+export function PostCard({ post, bookmarked, onToggleBookmark, onTagClick, memo, onMemoChange }: PostCardProps) {
   const initial = post.author.trim().charAt(0) || "?"
+
   return (
-    <article
-      className={cn(
-        "group flex flex-col rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40",
-        isRead && "border-border bg-muted/50 grayscale",
-      )}
-    >
+    <article className="group flex flex-col rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40">
       {/* Top row: status badges */}
       <div className="flex flex-wrap items-center gap-1.5">
         <Badge tone={post.isCompleted ? "success" : "primary"}>
@@ -41,16 +27,10 @@ export function PostCard({
         <Badge tone={post.isAdult ? "adult" : "muted"}>{post.isAdult ? "성인" : "전연령"}</Badge>
         <Badge tone="outline">{post.format}</Badge>
         {post.onlyJemJen && <Badge tone="neutral">잼젠</Badge>}
-        {post.isHit && <Star className="size-4 text-rose-500" fill="currentColor" aria-label="HIT 작품" />}
       </div>
 
       {/* Title */}
-      <h3
-        className={cn(
-          "mt-3 text-balance text-base font-bold leading-snug text-card-foreground transition-colors group-hover:text-primary",
-          isRead && "text-muted-foreground line-through group-hover:text-muted-foreground",
-        )}
-      >
+      <h3 className="mt-3 text-balance text-base font-bold leading-snug text-card-foreground transition-colors group-hover:text-primary">
         {post.title}
       </h3>
 
@@ -91,36 +71,20 @@ export function PostCard({
 
       {/* Footer */}
       <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => onToggleBookmark(post.id)}
-            aria-pressed={bookmarked}
-            aria-label={bookmarked ? "즐겨찾기 해제" : "즐겨찾기 추가"}
-            className={cn(
-              "flex size-8 items-center justify-center rounded-lg border border-border transition-colors",
-              bookmarked
-                ? "border-primary/40 bg-primary/10 text-primary"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
-            )}
-          >
-            <Heart className="size-4" fill={bookmarked ? "currentColor" : "none"} />
-          </button>
-          <button
-            type="button"
-            onClick={() => onToggleRead(post.id)}
-            aria-pressed={isRead}
-            aria-label={isRead ? "읽음 해제" : "읽음 표시"}
-            className={cn(
-              "flex size-8 items-center justify-center rounded-lg border border-border transition-colors",
-              isRead
-                ? "border-foreground/40 bg-foreground/10 text-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
-            )}
-          >
-            <X className="size-4" />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => onToggleBookmark(post.id)}
+          aria-pressed={bookmarked}
+          aria-label={bookmarked ? "즐겨찾기 해제" : "즐겨찾기 추가"}
+          className={cn(
+            "flex size-8 items-center justify-center rounded-lg border border-border transition-colors",
+            bookmarked
+              ? "border-primary/40 bg-primary/10 text-primary"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground",
+          )}
+        >
+          <Heart className="size-4" fill={bookmarked ? "currentColor" : "none"} />
+        </button>
 
         <a
           href={post.link}
