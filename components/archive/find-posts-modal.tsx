@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { type FindRequest } from "@/lib/archive-types"
-import { createArchiveSubmission, fetchArchiveSubmissions, updateArchiveSubmission } from "@/lib/archive-submissions"
+import { createArchiveSubmission, updateArchiveSubmission } from "@/lib/archive-submissions"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -23,17 +23,6 @@ export function FindPostsModal({ open, onOpenChange, requests, onRequestsChange 
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [comment, setComment] = useState<Record<string, string>>({})
-
-  // 모달이 열릴 때마다 서버(구글시트 웹훅)에서 최신 요청글 목록을 다시 가져옵니다.
-  // 이게 있어야 다른 사람이 쓰고 관리자가 승인한 글이 내 화면에도 보입니다.
-  useEffect(() => {
-    if (!open) return
-    void fetchArchiveSubmissions()
-      .then((snapshot) => {
-        if (snapshot.findRequests.length) onRequestsChange(snapshot.findRequests)
-      })
-      .catch((error) => console.error("[v0] find requests fetch failed", error))
-  }, [open])
 
   const submitRequest = () => {
     if (!title.trim() || !description.trim()) return
